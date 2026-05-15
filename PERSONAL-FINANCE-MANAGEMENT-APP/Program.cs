@@ -11,6 +11,7 @@ namespace PERSONAL_FINANCE_MANAGEMENT_APP
         static void Main(string[] args)
         {
             Console.WriteLine("Hello World");
+            Console.WriteLine("Xin chao toi la GPT");
             Console.WriteLine(123);
         }
     }
