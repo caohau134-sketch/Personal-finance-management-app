@@ -1,37 +1,12 @@
-using System.Linq;
-using PersonalFinanceApp.DTO;
+using System.Collections.Generic;
 
 namespace PersonalFinanceApp.DAL
 {
-    public class TransactionDAL : BaseDAL<TransactionDTO>
+    public interface IDataAccess<T>
     {
-        public TransactionDAL() : base("transactions.json") { }
-
-        public override bool Insert(TransactionDTO item)
-        {
-            // Tự động tăng ID
-            item.Id = Storage.Any() ? Storage.Max(t => t.Id) + 1 : 1;
-            Storage.Add(item);
-            SaveToFile();
-            return true;
-        }
-
-        public override bool Update(TransactionDTO item)
-        {
-            int index = Storage.FindIndex(t => t.Id == item.Id);
-            if (index == -1) return false;
-            Storage[index] = item;
-            SaveToFile();
-            return true;
-        }
-
-        public override bool Delete(int id)
-        {
-            var item = Storage.Find(t => t.Id == id);
-            if (item == null) return false;
-            Storage.Remove(item);
-            SaveToFile();
-            return true;
-        }
+        bool Insert(T item);
+        bool Update(T item);
+        bool Delete(int id);
+        List<T> GetAll();
     }
 }
