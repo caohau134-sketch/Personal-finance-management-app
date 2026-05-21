@@ -136,7 +136,11 @@ namespace PersonalFinanceApp
             decimal tongThu = 0, tongChi = 0;
             foreach (var t in list)
             {
-                Console.WriteLine(t.GetSummary());
+                // UI TỰ XỬ LÝ FORMAT CHUỖI VÀ TÍNH TOÁN (Thay vì nhờ DTO)
+                string type = t.IsIncome ? "Thu" : "Chi";
+                string noteStr = string.IsNullOrEmpty(t.Note) ? "" : $" (Ghi chú: {t.Note})";
+                Console.WriteLine($"[{t.Id}] {t.CreatedDate:dd/MM/yyyy} - {type} | {t.CategoryName}: {t.Amount:#,##0} VND{noteStr}");
+                
                 if (t.IsIncome) tongThu += t.Amount;
                 else tongChi += t.Amount;
             }
