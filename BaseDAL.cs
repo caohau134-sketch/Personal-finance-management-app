@@ -5,7 +5,6 @@ using System.Linq;
 
 namespace PersonalFinanceApp.DAL
 {
-    // Tích hợp đọc/ghi file JSON vào lớp Base
     public abstract class BaseDAL<T> : IDataAccess<T>
     {
         protected string FilePath;
