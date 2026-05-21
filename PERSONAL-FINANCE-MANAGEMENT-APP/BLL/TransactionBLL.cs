@@ -1,58 +1,120 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using DAL;
-using DTO;
-using System.Text.RegularExpressions;
+using PersonalFinanceApp.DAL;
+using PersonalFinanceApp.DTO;
 
-    namespace QuanLyTaiChinh.BLL
+namespace PersonalFinanceApp.BLL
+{
+    public class TransactionBLL
     {
-        public class AccountBLL
+        private readonly TransactionDAL _transactionDAL;
+        private readonly BudgetBLL _budgetBLL;
+
+        public TransactionBLL()
         {
-            private AccountDAL _dal = new AccountDAL();
+            _transactionDAL = new TransactionDAL();
+            _budgetBLL = new BudgetBLL();
+        }
 
-            // 1.ĐĂNG NHẬP (Tài khoản, Mật khẩu, SĐT)
-            public string Login(string username, string password, string phone)
+        public List<TransactionDTO> GetAllTransactions()
+        {
+            return _transactionDAL.GetAll();
+        }
+
+        /// <summary>
+        /// Thêm giao dịch mới và tự động cập nhật lại tình trạng ngân sách liên quan
+        /// </summary>
+        public bool AddTransaction(TransactionDTO transaction, out string warningMessage)
+        {
+            warningMessage = string.Empty;
+
+            if (transaction == null) throw new ArgumentNullException(nameof(transaction), "Dữ liệu giao dịch trống.");
+            if (transaction.Amount <= 0) throw new ArgumentException("Số tiền giao dịch phải lớn hơn 0.");
+            if (string.IsNullOrWhiteSpace(transaction.CategoryName)) throw new ArgumentException("Danh mục không được bỏ trống.");
+
+            transaction.CategoryName = transaction.CategoryName.Trim();
+            
+            // Thực hiện thêm giao dịch vào file lưu trữ
+            bool result = _transactionDAL.Insert(transaction);
+
+            if (result)
             {
-                if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password) || string.IsNullOrWhiteSpace(phone))
-                    return "Vui lòng nhập đầy đủ thông tin!";
+                // Đồng bộ và tính toán lại ngân sách chi tiêu
+                _budgetBLL.RecalculateAllBudgets(_transactionDAL.GetAll());
 
-                var account = _dal.GetAccount(username, password, phone);
-
-                if (account != null)
-                    return "Success";
-
-                return "Thông tin đăng nhập không chính xác!";
+                // Nếu là khoản chi, kiểm tra xem có chạm ngưỡng vượt hạn mức không để đưa ra cảnh báo cho GUI hiển thị
+                if (!transaction.IsIncome)
+                {
+                    var budget = _budgetBLL.GetBudgetByCategory(transaction.CategoryName);
+                    if (budget != null && budget.IsOverBudget)
+                    {
+                        warningMessage = $"⚠ Cảnh báo: Danh mục chi tiêu '{budget.CategoryName}' đã vượt quá hạn mức ngân sách cho phép!";
+                    }
+                }
             }
 
-            // 2.ĐĂNG KÝ (TK, MK, Nhập lại MK, SĐT, Gmail)
-            public string Register(AccountDTO acc)
+            return result;
+        }
+
+        /// <summary>
+        /// Cập nhật giao dịch cũ và tính toán lại dòng ngân sách bị tác động
+        /// </summary>
+        public bool UpdateTransaction(TransactionDTO transaction, out string warningMessage)
+        {
+            warningMessage = string.Empty;
+
+            if (transaction == null) throw new ArgumentNullException(nameof(transaction));
+            if (transaction.Amount <= 0) throw new ArgumentException("Số tiền giao dịch phải lớn hơn 0.");
+
+            transaction.CategoryName = transaction.CategoryName.Trim();
+            bool result = _transactionDAL.Update(transaction);
+
+            if (result)
             {
-                // Kiểm tra trống
-                if (string.IsNullOrWhiteSpace(acc.Username) || string.IsNullOrWhiteSpace(acc.Password) ||
-                    string.IsNullOrWhiteSpace(acc.PhoneNumber) || string.IsNullOrWhiteSpace(acc.Email))
+                _budgetBLL.RecalculateAllBudgets(_transactionDAL.GetAll());
+
+                if (!transaction.IsIncome)
                 {
-                    return "Thông tin không được để trống, vui lòng nhập thông tin!";
+                    var budget = _budgetBLL.GetBudgetByCategory(transaction.CategoryName);
+                    if (budget != null && budget.IsOverBudget)
+                    {
+                        warningMessage = $"⚠ Cảnh báo: Sau khi cập nhật, danh mục '{budget.CategoryName}' đã bị vượt hạn mức ngân sách!";
+                    }
                 }
+            }
 
-                // Kiểm tra khớp mật khẩu
-                if (acc.Password != acc.ConfirmPassword)
-                    return "Mật khẩu nhập lại không khớp, vui lòng kiểm tra lại!";
+            return result;
+        }
 
-                // Kiểm tra định dạng Email đơn giản
-                if (!acc.Email.Contains("@") || !acc.Email.Contains("."))
-                    return "Email không hợp lệ!";
+        /// <summary>
+        /// Xóa bỏ giao dịch và hoàn trả lại hạn mức trống cho ngân sách danh mục
+        /// </summary>
+        public bool DeleteTransaction(int id)
+        {
+            bool result = _transactionDAL.Delete(id);
+            if (result)
+            {
+                // Sau khi xóa, tính toán giảm trừ số tiền tiêu thụ của danh mục ngân sách đó
+                _budgetBLL.RecalculateAllBudgets(_transactionDAL.GetAll());
+            }
+            return result;
+        }
 
-                // Kiểm tra tài khoản đã tồn tại chưa
-                if (_dal.IsExist(acc.Username))
-                    return "Tài khoản này đã tồn tại!";
+        /// <summary>
+        /// Tính toán tổng số dư khả dụng hiện tại (Thu nhập - Chi tiêu)
+        /// </summary>
+        public decimal GetCurrentBalance()
+        {
+            var transactions = _transactionDAL.GetAll();
+            decimal balance = 0;
 
-                // Lưu dữ liệu
-                bool result = _dal.AddAccount(acc);
-                return result ? "Success" : "Có lỗi xảy ra khi đăng ký!";
+            foreach (var t in transactions)
+            {
+                if (t.IsIncome) balance += t.Amount;
+                else balance -= t.Amount;
+            }
+
+            return balance;
         }
     }
-
-
+}
