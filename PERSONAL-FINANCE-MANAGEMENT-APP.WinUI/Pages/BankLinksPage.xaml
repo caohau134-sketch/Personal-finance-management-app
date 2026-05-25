@@ -1,0 +1,18 @@
+<Page
+    x:Class="PersonalFinanceWinUI.App.Pages.BankLinksPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <StackPanel Padding="16" Spacing="10">
+        <TextBlock Text="Lien ket tai khoan ngan hang / the" FontSize="28" FontWeight="SemiBold"/>
+        <TextBox x:Name="ProviderBox" Header="Ngan hang/Vi (VD: Vietcombank, MoMo)"/>
+        <TextBox x:Name="MaskBox" Header="So the/tai khoan rut gon (VD: ****1234)"/>
+        <ComboBox x:Name="TypeBox" Header="Loai">
+            <ComboBoxItem Content="Card" IsSelected="True"/>
+            <ComboBoxItem Content="BankAccount"/>
+            <ComboBoxItem Content="EWallet"/>
+        </ComboBox>
+        <Button Content="Them lien ket" Click="AddLink_Click"/>
+        <TextBlock x:Name="StatusText"/>
+        <ListView x:Name="LinksList"/>
+    </StackPanel>
+</Page>

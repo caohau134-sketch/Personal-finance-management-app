@@ -1,0 +1,20 @@
+<Application
+    x:Class="PersonalFinanceWinUI.App.App"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
+            </ResourceDictionary.MergedDictionaries>
+            <Color x:Key="BrandBlue">#2F5D9B</Color>
+            <SolidColorBrush x:Key="BrandBlueBrush" Color="{StaticResource BrandBlue}" />
+            <SolidColorBrush x:Key="CardBorderBrush" Color="#D5D9E2" />
+            <SolidColorBrush x:Key="SoftBgBrush" Color="#F6F8FC" />
+            <Style TargetType="Button">
+                <Setter Property="CornerRadius" Value="10" />
+                <Setter Property="Padding" Value="18,10" />
+            </Style>
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>
