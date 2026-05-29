@@ -20,7 +20,7 @@ Class: 23DTV_DienTu<br>
 | GUI Development                               |                 |         x          |              |                |
 | Business Logic Layer                          |                 |                    |        x     |                |
 | Chart & Integration                           |        x        |                    |              |                |
-| Complete                                      |     **0%**      |       **0%**       |    **0%**    |     **0%**     |
+| Complete                                      |     **100%**      |       **100%**       |    **100%**    |     **100%**     |
 
 
 
