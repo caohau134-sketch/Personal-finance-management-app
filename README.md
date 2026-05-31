@@ -16,16 +16,20 @@ Class: 23DTV_DienTu<br>
 
 | Task Description                              |   Cao Phuc Hau  |   Tran Quoc Hung   | Vu Minh Hien | Phan Duy Khanh |
 |-----------------------------------------------|:---------------:|:------------------:|:------------:|:--------------:|
-| Data Transfer Objects &  Data Access Layer    |                 |                    |              |        x       |
-| GUI Development                               |                 |         x          |              |                |
-| Business Logic Layer                          |                 |                    |        x     |                |
-| Chart & Integration                           |        x        |                    |              |                |
+| Data Transfer Objects &  Data Access Layer    |        p        |         p          |        p     |        c       |
+| GUI Development                               |        p        |         c          |        p     |        p       |
+| Business Logic Layer                          |        p        |         p          |        c     |        p       |
+| Chart & Integration                           |        c        |         p          |        p     |        p       |
 | Complete                                      |     **100%**      |       **100%**       |    **100%**    |     **100%**     |
 
 
 
 ---
 ## Legend:
+| Symbol | Meaning |
+|---------|---------|
+| **C** | Main Responsibility |
+| **P** | Support / Collaboration |
 - X: Task completed
 - (100%) Percentage completion
 
